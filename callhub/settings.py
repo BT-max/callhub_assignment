@@ -32,7 +32,7 @@ SECRET_KEY = 'l_lnt_l20x6&%8%%9%^2r+4a6fwfrk6&e!&tlu9*hua_()nu@0'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['callhub-assignment.herokuapp.com']
 
 
 # Application definition

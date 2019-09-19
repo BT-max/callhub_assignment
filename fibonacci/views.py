@@ -1,31 +1,68 @@
 from django.shortcuts import render
 from django.http import HttpResponse
+import time
+from fibonacci.models import FibonacciSeries
+from django.core.exceptions import ObjectDoesNotExist
+
 
 # Create your views here.
 
 
 def index(request):
+    """
+    A function that renders the index.html page
+    """
+
     return render(request, 'index.html')
 
 
-def result(request):
-    num = int(request.GET['num'])
-    if num < 0:
-        raise ValueError("Negative arguments not implemented")
-    nth = find_fib(num)
+def get_fib(request):
+    """
+    Function which gets the nth fibonacci number
 
-    return render(request, 'result.html', {'result': nth[0]})
+    - startTime: Stores the time when the function is invoked
+    - endTime: Stores the time when the function completes computation
+    - timeTaken: Stores the total time taken to process the request in string format
+    - num: Receives the nth number from the user
+    - answer: searches if number is present in the database
+    - fibonacciNumber: stores the result
+    -solution: Dictionary object that returns the result
+    """
 
+    startTime = time.time()
+    num = int(request.GET.get("num"))
+    # search database for existing entry
+    try:
+        answer = FibonacciSeries.objects.get(index=num)
+    except FibonacciSeries.DoesNotExist:
+        answer = None
 
-def find_fib(num):
-    if num == 0:
-        return 0, 1
+    if answer:
+        fibonacciNumber = answer.fibonacciNumber
     else:
-        a, b = find_fib(num // 2)
-        c = a * (b * 2 - a)
-        d = a * a + b * b
+        # if entry doesnt exist then calculate fibonacciNumber
+        fibonacciNumber = calculate_fib(num)
+        # create new entry for future use
+        entry = FibonacciSeries.objects.create(index=num, fibonacciNumber=str(fibonacciNumber))
+        entry.save()
+    endTime = time.time() - startTime
+    timeTaken = str(endTime)
+    solution = {"result": fibonacciNumber, "timeTaken": timeTaken}
+    return render(request, 'result.html', solution)
 
-        if num % 2 == 0:
-            return c, d
-        else:
-            return d, c + d
+
+def calculate_fib(num):
+    """
+    Function that calculates nth fibonacci number using fast doubling fibonacci algorithm
+
+    """
+    if num == 0:
+        return 0
+    if num <= 2:
+        return 1
+    k = int(num / 2)
+    a = calculate_fib(k + 1)
+    b = calculate_fib(k)
+    if num % 2 == 1:
+        return a * a + b * b
+    return b * (2 * a - b)

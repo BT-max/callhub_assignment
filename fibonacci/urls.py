@@ -3,6 +3,6 @@ from . import views
 
 urlpatterns = [
     path('', views.index, name="index"),
-    path('fib', views.result, name='result'),
+    path('fib', views.get_fib, name='result'),
     path('index', views.index)
 ]
